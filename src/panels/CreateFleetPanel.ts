@@ -4,11 +4,11 @@ import { TelemetryDefinition } from "../webview-contract/webviewTypes";
 import { MessageHandler, MessageSink } from "../webview-contract/messaging";
 import {
     InitialState,
-    HubClusterMode,
-    ProgressEventType,
+    // HubClusterMode,
+    // ProgressEventType,
     ToVsCodeMsgDef,
     ToWebViewMsgDef,
-    ResourceGroup as WebviewResourceGroup,
+    // ResourceGroup as WebviewResourceGroup,
 } from "../webview-contract/webviewDefinitions/createFleet";
 
 export class CreateFleetPanel extends BasePanel<"createFleet"> {
@@ -50,28 +50,30 @@ export class CreateFleetDataProvider implements PanelDataProvider<"createFleet">
         return {
             getLocationsRequest: () => this.handleGetLocationsRequest(webview),
             getResourceGroupsRequest: () => this.handleGetResourceGroupsRequest(webview),
-            createFleetRequest: (args) =>
-                this.handleCreateFleetRequest(
-                    args.isNewResourceGroup,
-                    args.resourceGroupName,
-                    args.location,
-                    args.name,
-                    args.hubClusterMode,
-                    webview,
-                ),
+            createFleetRequest: () =>
+                this
+                    .handleCreateFleetRequest
+                    // args.isNewResourceGroup,
+                    // args.resourceGroupName,
+                    // args.location,
+                    // args.name,
+                    // args.hubClusterMode,
+                    // webview,
+                    (),
         };
     }
 
-    private handleGetLocationsRequest(webview: MessageSink<ToWebViewMsgDef>) {}
+    private handleGetLocationsRequest(webview: MessageSink<ToWebViewMsgDef>) {
+        console.log(webview);
+    }
 
-    private handleGetResourceGroupsRequest(webview: MessageSink<ToWebViewMsgDef>) {}
+    private handleGetResourceGroupsRequest(webview: MessageSink<ToWebViewMsgDef>) {
+        console.log(webview);
+    }
 
-    private handleCreateFleetRequest(
-        isNewResourceGroup: boolean,
-        resourceGroupName: string,
-        location: string,
-        name: string,
-        hubClusterMode: HubClusterMode,
-        webview: MessageSink<ToWebViewMsgDef>,
-    ) {}
+    private handleCreateFleetRequest() // location: string, // resourceGroupName: string, // isNewResourceGroup: boolean,
+    // name: string,
+    // hubClusterMode: HubClusterMode,
+    // webview: MessageSink<ToWebViewMsgDef>,
+    {}
 }
