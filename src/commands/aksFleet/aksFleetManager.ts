@@ -8,6 +8,7 @@ import { getExtension, longRunning } from "../utils/host";
 import { ContainerServiceFleetClient } from "@azure/arm-containerservicefleet";
 import { fleetCreate } from "../utils/fleet";
 import { getResourceGroups } from "../utils/resourceGroups";
+import { CreateFleetDataProvider, CreateFleetPanel } from "../../panels/CreateFleetPanel";
 
 /**
  * A multi-step input using window.createQuickPick() and window.createInputBox().
@@ -36,6 +37,7 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
     }
 
     const subscriptionId = subscriptionNode.result?.subscriptionId;
+    const subscriptionName = subscriptionNode.result?.name;
 
     if (!subscriptionNode.result?.subscriptionId || !subscriptionNode.result?.name) {
         vscode.window.showErrorMessage("Subscription not found.");
@@ -64,6 +66,17 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
     const resource = {
         location: "East US break break to avoid fleet now",
     };
+
+    const panel = new CreateFleetPanel(extension.result.extensionUri);
+
+    if (!subscriptionId || !subscriptionName) {
+        vscode.window.showErrorMessage("Subscription ID or Name is undefined.");
+        return;
+    }
+
+    const dataProvider = new CreateFleetDataProvider(subscriptionId, subscriptionNode.result?.name);
+
+    panel.show(dataProvider);
 
     // Fleet API call.
     // https://learn.microsoft.com/en-nz/rest/api/fleet/fleets/create-or-update?view=rest-fleet-2023-10-15&tabs=JavaScript
