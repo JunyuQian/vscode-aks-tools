@@ -59,12 +59,12 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
         return;
     }
 
-    const fleetName = "fleet1";
+    const fleetName = "junyu-vscode-fleet3";
     // Junyu's playground
     // Todo: Add fleet resource
     // Todo: Add fleet find a way to choose resrouce groupName
     const resource = {
-        location: "East US break break to avoid fleet now",
+        location: "Australia East break break break",
     };
 
     const panel = new CreateFleetPanel(extension.result.extensionUri);
@@ -83,7 +83,8 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
 
     // Sample only for Junyus playground
     const resultFleetCreate = await longRunning(`Creating fleet...`, async () => {
-        return fleetCreate(client, resourceGroup.result[0].name, fleetName, resource);
+        // return fleetCreate(client, resourceGroup.result[0].name, fleetName, resource);
+        return fleetCreate(client, "junyuqian", fleetName, resource);
     });
 
     if (failed(resultFleetCreate)) {
