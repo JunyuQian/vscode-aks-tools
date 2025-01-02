@@ -74,7 +74,11 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
         return;
     }
 
-    const dataProvider = new CreateFleetDataProvider(subscriptionId, subscriptionNode.result?.name);
+    const dataProvider = new CreateFleetDataProvider(
+        sessionProvider.result,
+        subscriptionId,
+        subscriptionNode.result?.name,
+    );
 
     panel.show(dataProvider);
 
