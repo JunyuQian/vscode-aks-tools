@@ -1,13 +1,9 @@
-// import { useEffect } from "react";
-import React, { FormEvent, useState } from "react";
+import { useEffect } from "react";
 import { InitialState } from "../../../src/webview-contract/webviewDefinitions/createFleet";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
-import { invalid, unset, valid, Validatable } from "../utilities/validation";
+import { CreateFleetInput } from "./CreateFleetInput";
+import { useStateManagement } from "../utilities/state";
+import { Stage, stateUpdater, vscode } from "./helpers/state";
 // import { CreateFleetState, Stage } from "./helpers/state";
-// import { useStateManagement } from "../utilities/state";
-// import { Stage, stateUpdater, vscode } from "./helpers/state";
-
-type ChangeEvent = Event | FormEvent<HTMLElement>;
 
 export function CreateFleet(initialState: InitialState) {
     // const state: CreateFleetState = {
@@ -15,28 +11,27 @@ export function CreateFleet(initialState: InitialState) {
     //     subscriptionId: initialState.subscriptionId,
     //     subscriptionName: initialState.subscriptionName,
     // };
-    // const { state, eventHandlers } = useStateManagement(stateUpdater, initialState, vscode);
+    const { state, eventHandlers } = useStateManagement(stateUpdater, initialState, vscode);
+    // should be removed once dynamic user input is implemented
+    state.locations = ["au east", "au southeast"];
+    state.resourceGroups = [
+        { name: "rg1", location: "au east" },
+        { name: "rg2", location: "au southeast" },
+    ];
 
-    // useEffect(() => {
-    //     if (state.stage === Stage.Uninitialized) {
-    //         vscode.postGetLocationsRequest();
-    //         vscode.postGetResourceGroupsRequest();
-    //         eventHandlers.onSetInitializing();
-    //     }
-    // });
-    const [existingResourceGroup, setExistingResourceGroup] = useState<Validatable<string | null>>(unset());
-    // should be ResourceGroup type rather than String
-    // const [existingResourceGroup, setExistingResourceGroup] = useState<Validatable<ResourceGroup | null>>(unset());
-    const [fleetName, setFleetName] = useState("");
-    const [selectedIndex, setSelectedIndex] = useState<number>(0);
-    const resourceGroups = ["Group1", "Group2", "Group3"]; // hardcoded resource groups
+    useEffect(() => {
+        if (state.stage === Stage.Uninitialized) {
+            vscode.postGetLocationsRequest();
+            vscode.postGetResourceGroupsRequest();
+            eventHandlers.onSetInitializing();
+        }
+    });
 
-    function handleSubmit(event: React.FormEvent) {
-        event.preventDefault();
-        // Handle form submission logic here
-        console.log("Fleet Name:", fleetName);
-        console.log("Resource Group:", existingResourceGroup);
-    }
+    useEffect(() => {
+        if (state.stage === Stage.Loading && state.locations !== null && state.resourceGroups !== null) {
+            eventHandlers.onSetInitialized();
+        }
+    }, [state.stage, state.locations, state.resourceGroups, eventHandlers]);
 
     function getBody() {
         // switch (state.stage) {
@@ -45,69 +40,22 @@ export function CreateFleet(initialState: InitialState) {
         //         return <p>Loading...</p>;
         //     case Stage.CollectingInput:
         //         return (
-        //             <>
-        //                 <h1>Create AKS Fleet Manager</h1>
-        //                 {/* <label>Subscription: {stateUpdater.subscriptionName}</label>
-        //                 {getBody()} */}
-        //                 <p>Initial State: {JSON.stringify(initialState)}</p>
-        //             </>
+        //             <CreateFleetInput
+        //                 locations={state.locations!}
+        //                 resourceGroups={state.resourceGroups!}
+        //                 eventHandlers={eventHandlers}
+        //                 vscode={vscode}
+        //             />
         //         );
         // }
         return (
-            // below should be under Stage.CollectingInput
-            <>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="fleetName">Fleet Name:</label>
-                        <input
-                            type="text"
-                            id="fleetName"
-                            value={fleetName}
-                            onChange={(e) => setFleetName(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="resourceGroup">Resource Group:</label>
-                        <VSCodeDropdown
-                            id="existing-resource-group-dropdown"
-                            // className={styles.midControl}
-                            onBlur={handleValidationAndIndex}
-                            onChange={handleValidationAndIndex}
-                            selectedIndex={selectedIndex}
-                            aria-label="Select a resource group"
-                        >
-                            <VSCodeOption selected value="">
-                                Select
-                            </VSCodeOption>
-                            {resourceGroups.length > 0 ? (
-                                resourceGroups.map((group) => (
-                                    <VSCodeOption key={group} value={group}>
-                                        {/* {group === newResourceGroup ? "(New)" : ""} {group} */}
-                                        {""} {group}
-                                    </VSCodeOption>
-                                ))
-                            ) : (
-                                <VSCodeOption disabled>No resource groups available</VSCodeOption>
-                            )}
-                        </VSCodeDropdown>
-                    </div>
-                    <button type="submit">Create</button>
-                </form>
-            </>
+            <CreateFleetInput
+                locations={state.locations!}
+                resourceGroups={state.resourceGroups!}
+                eventHandlers={eventHandlers}
+                vscode={vscode}
+            />
         );
-    }
-
-    function handleValidationAndIndex(e: ChangeEvent) {
-        handleExistingResourceGroupChange(e);
-        const ele = e.currentTarget as HTMLSelectElement;
-        setSelectedIndex(ele.selectedIndex);
-    }
-
-    function handleExistingResourceGroupChange(e: ChangeEvent) {
-        const elem = e.currentTarget as HTMLSelectElement;
-        const resourceGroup = elem.selectedIndex <= 0 ? null : resourceGroups[elem.selectedIndex - 1];
-        const validatable = resourceGroup ? valid(resourceGroup) : invalid(null, "Resource Group is required.");
-        setExistingResourceGroup(validatable);
     }
 
     return (

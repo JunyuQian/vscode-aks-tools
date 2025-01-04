@@ -1,12 +1,10 @@
 import { IActionContext } from "@microsoft/vscode-azext-utils";
 import * as vscode from "vscode";
 import * as k8s from "vscode-kubernetes-tools-api";
-import { getCredential, getReadySessionProvider } from "../../auth/azureAuth";
+import { getReadySessionProvider } from "../../auth/azureAuth";
 import { getAksClusterSubscriptionNode } from "../utils/clusters";
 import { failed } from "../utils/errorable";
-import { getExtension, longRunning } from "../utils/host";
-import { ContainerServiceFleetClient } from "@azure/arm-containerservicefleet";
-import { fleetCreate } from "../utils/fleet";
+import { getExtension } from "../utils/host";
 import { getResourceGroups } from "../utils/resourceGroups";
 import { CreateFleetDataProvider, CreateFleetPanel } from "../../panels/CreateFleetPanel";
 
@@ -51,21 +49,12 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
     }
 
     // make fleet creation call here
-    const client = new ContainerServiceFleetClient(getCredential(sessionProvider.result), subscriptionId);
     const resourceGroup = await getResourceGroups(sessionProvider.result, subscriptionId);
 
     if (failed(resourceGroup)) {
         vscode.window.showErrorMessage(resourceGroup.error);
         return;
     }
-
-    const fleetName = "junyu-vscode-fleet3";
-    // Junyu's playground
-    // Todo: Add fleet resource
-    // Todo: Add fleet find a way to choose resrouce groupName
-    const resource = {
-        location: "Australia East break break break",
-    };
 
     const panel = new CreateFleetPanel(extension.result.extensionUri);
 
@@ -84,16 +73,4 @@ export default async function aksCreateFleet(_context: IActionContext, target: u
 
     // Fleet API call.
     // https://learn.microsoft.com/en-nz/rest/api/fleet/fleets/create-or-update?view=rest-fleet-2023-10-15&tabs=JavaScript
-
-    // Sample only for Junyus playground
-    const resultFleetCreate = await longRunning(`Creating fleet...`, async () => {
-        // return fleetCreate(client, resourceGroup.result[0].name, fleetName, resource);
-        return fleetCreate(client, "junyuqian", fleetName, resource);
-    });
-
-    if (failed(resultFleetCreate)) {
-        vscode.window.showErrorMessage(`Failed to create fleet: ${resultFleetCreate}`);
-        return;
-    }
-    vscode.window.showInformationMessage(`Fleet ${resultFleetCreate.result}.`);
 }
